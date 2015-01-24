@@ -3,8 +3,7 @@
   var main;
 
   main = function() {
-    var b, boxHeight, boxWidth, boxof, dat, esc, fromx, fromy, lab, node, output, p, path, pathof, svg, toNode, tox, toy, turnx, xgrid, ygrid, _i, _j, _len, _len1, _ref, _ref1;
-    svg = d3.select("svg#main");
+    var b, boxHeight, boxWidth, boxof, dat, esc, fromx, fromy, lab, layout, node, output, p, path, pathof, paths, svg, toNode, tox, toy, turnx, xgrid, ygrid, _i, _j, _k, _len, _len1, _len2, _ref;
     xgrid = 130;
     ygrid = 30;
     boxWidth = 120;
@@ -18,6 +17,74 @@
     pathof = function(from, to) {
       return "path#" + esc(from) + "-" + esc(to);
     };
+    layout = function() {
+      var col, cols, dat, i, n, node, out, tak, taken, x, xmax, xmin, xthis, y, ymax, _i, _j, _k, _len, _ref, _ref1, _ref2, _results;
+      xmax = 0;
+      ymax = 0;
+      for (node in gostd) {
+        dat = gostd[node];
+        if (dat.x > xmax) {
+          xmax = dat.x;
+        }
+        if (dat.y > ymax) {
+          ymax = dat.y;
+        }
+      }
+      taken = [];
+      cols = [];
+      for (i = _i = 0; 0 <= xmax ? _i <= xmax : _i >= xmax; i = 0 <= xmax ? ++_i : --_i) {
+        taken.push({});
+        cols.push([]);
+      }
+      for (node in gostd) {
+        dat = gostd[node];
+        dat.name = node;
+        cols[dat.x].push(dat);
+      }
+      console.log(cols);
+      for (x in cols) {
+        col = cols[x];
+        console.log(col);
+        for (y in col) {
+          dat = col[y];
+          xthis = dat.x;
+          xmax = dat.x;
+          xmin = -1;
+          _ref = dat.outs;
+          for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+            out = _ref[_j];
+            n = gostd[out];
+            if (n.x > xmax) {
+              xmax = n.x;
+            }
+            if (xmin === -1 || n.x < xmin) {
+              xmin = n.x;
+            }
+          }
+          tak = taken[xthis];
+          y = 0;
+          while (y in tak) {
+            y = y + 1;
+          }
+          tak[y] = true;
+          if (xmax - 1 > xthis) {
+            for (i = _k = _ref1 = xthis + 1, _ref2 = xmax - 1; _ref1 <= _ref2 ? _k <= _ref2 : _k >= _ref2; i = _ref1 <= _ref2 ? ++_k : --_k) {
+              taken[i][y] = true;
+            }
+          }
+          dat.newy = y;
+        }
+      }
+      _results = [];
+      for (node in gostd) {
+        dat = gostd[node];
+        _results.push(dat.y = dat.newy);
+      }
+      return _results;
+    };
+    layout();
+    svg = d3.select("svg#main");
+    paths = [];
     for (node in gostd) {
       dat = gostd[node];
       _ref = dat.outs;
@@ -33,36 +100,27 @@
         path += " L" + turnx + " " + fromy;
         path += " L" + turnx + " " + toy;
         path += " L" + tox + " " + toy;
-        p = svg.append("path");
-        p.attr("d", path);
-        p.attr("class", "bg");
+        paths.push({
+          p: path,
+          n: esc(node) + "-" + esc(output)
+        });
       }
+    }
+    for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
+      path = paths[_j];
+      p = svg.append("path");
+      p.attr("d", path.p);
+      p.attr("class", "bg");
+    }
+    for (_k = 0, _len2 = paths.length; _k < _len2; _k++) {
+      path = paths[_k];
+      p = svg.append("path");
+      p.attr("d", path.p);
+      p.attr("id", path.n);
+      p.attr("class", "dep");
     }
     for (node in gostd) {
       dat = gostd[node];
-      _ref1 = dat.outs;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        output = _ref1[_j];
-        toNode = gostd[output];
-        fromx = dat.x * xgrid + boxWidth;
-        fromy = dat.y * ygrid + boxHeight / 2;
-        tox = toNode.x * xgrid;
-        toy = toNode.y * ygrid + boxHeight / 2;
-        turnx = tox - 5;
-        path = "M" + fromx + " " + fromy;
-        path += " L" + turnx + " " + fromy;
-        path += " L" + turnx + " " + toy;
-        path += " L" + tox + " " + toy;
-        p = svg.append("path");
-        p = svg.append("path");
-        p.attr("d", path);
-        p.attr("id", esc(node) + "-" + esc(output));
-        p.attr("class", "dep");
-      }
-    }
-    for (node in gostd) {
-      dat = gostd[node];
-      dat.name = node;
       b = svg.append("rect");
       b.attr("x", dat.x * xgrid);
       b.attr("y", dat.y * ygrid);
@@ -82,19 +140,19 @@
         var x;
         x = dat;
         return function(d) {
-          var input, _k, _l, _len2, _len3, _ref2, _ref3;
+          var input, _l, _len3, _len4, _m, _ref1, _ref2;
           svg.selectAll("rect").attr("class", "box");
           svg.selectAll("path.dep").attr("class", "dep");
           svg.select(boxof(x.name)).attr("class", "box focus");
-          _ref2 = x.ins;
-          for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-            input = _ref2[_k];
+          _ref1 = x.ins;
+          for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+            input = _ref1[_l];
             svg.select(boxof(input)).attr("class", "box in");
             svg.select(pathof(input, x.name)).attr("class", "dep in");
           }
-          _ref3 = x.outs;
-          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-            output = _ref3[_l];
+          _ref2 = x.outs;
+          for (_m = 0, _len4 = _ref2.length; _m < _len4; _m++) {
+            output = _ref2[_m];
             svg.select(boxof(output)).attr("class", "box out");
             svg.select(pathof(x.name, output)).attr("class", "dep out");
           }
