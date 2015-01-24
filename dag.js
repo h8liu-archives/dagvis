@@ -118,7 +118,7 @@
     };
     xpush();
     layout = function() {
-      var col, cols, i, n, out, tak, taken, x, xmax, xmin, xthis, y, ymax, _i, _j, _k, _len, _ref, _ref1, _ref2;
+      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1, _ref2;
       xmax = 0;
       ymax = 0;
       for (node in gostd) {
@@ -140,16 +140,34 @@
         dat = gostd[node];
         cols[dat.x].push(dat);
       }
-      for (x in cols) {
-        col = cols[x];
-        for (y in col) {
-          dat = col[y];
+      for (_j = 0, _len = cols.length; _j < _len; _j++) {
+        col = cols[_j];
+        col.sort(function(a, b) {
+          if (a.outs.length > b.outs.length) {
+            return -1;
+          }
+          if (a.outs.length < b.outs.length) {
+            return 1;
+          }
+          if (a.name > b.name) {
+            return 1;
+          }
+          if (a.name < b.name) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+      for (_k = 0, _len1 = cols.length; _k < _len1; _k++) {
+        col = cols[_k];
+        for (_l = 0, _len2 = col.length; _l < _len2; _l++) {
+          dat = col[_l];
           xthis = dat.x;
           xmax = dat.x;
           xmin = -1;
           _ref = dat.outs;
-          for (_j = 0, _len = _ref.length; _j < _len; _j++) {
-            out = _ref[_j];
+          for (_m = 0, _len3 = _ref.length; _m < _len3; _m++) {
+            out = _ref[_m];
             n = gostd[out];
             if (n.x > xmax) {
               xmax = n.x;
@@ -165,7 +183,7 @@
           }
           tak[y] = true;
           if (xmax - 1 > xthis) {
-            for (i = _k = _ref1 = xthis + 1, _ref2 = xmax - 1; _ref1 <= _ref2 ? _k <= _ref2 : _k >= _ref2; i = _ref1 <= _ref2 ? ++_k : --_k) {
+            for (i = _n = _ref1 = xthis + 1, _ref2 = xmax - 1; _ref1 <= _ref2 ? _n <= _ref2 : _n >= _ref2; i = _ref1 <= _ref2 ? ++_n : --_n) {
               taken[i][y] = true;
             }
           }

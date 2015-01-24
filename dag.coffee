@@ -91,11 +91,17 @@ main = ->
 
         for node, dat of gostd
             cols[dat.x].push(dat)
-    
-        for x of cols
-            col = cols[x]
-            for y of col
-                dat = col[y]
+
+        for col in cols
+            col.sort((a, b) ->
+                return -1 if a.outs.length > b.outs.length
+                return 1 if a.outs.length < b.outs.length
+                return 1 if a.name > b.name
+                return -1 if a.name < b.name
+                return 0
+            )
+        for col in cols
+            for dat in col
                 xthis = dat.x
                 xmax = dat.x
                 xmin = -1
