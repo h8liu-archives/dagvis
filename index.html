@@ -5,14 +5,17 @@
     <meta charset="utf-8">
     <title>Go standard library DAG visualization</title>
     <style>
-        
+        svg#main {
+            background: #eee;
+        }
     </style>
 </head>
 
 <body>
-    <svg width="800" height="800">
+    <svg width="800" height="800" id="main">
     </svg>
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="d3.js"></script>
     <script type="text/javascript" src="gostd.js"></script>
     <script type="text/javascript" src="dag.js"></script>
 </body>
