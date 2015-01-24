@@ -6,13 +6,56 @@
     <title>Go standard library DAG visualization</title>
     <style>
         svg#main {
-            background: #eee;
         }
+
+        .lab {
+            text-anchor: middle;
+            font-family: "Consolas";
+            font-size: 11px;
+        }
+
+        rect.box {
+            fill: #eee;
+        }
+
+        rect.in {
+            fill: #ccf;
+        }
+
+        rect.out {
+            fill: #cdc;
+        }
+
+        rect.focus {
+            fill: #fcc;
+        }
+
+        path {
+            fill: none;
+            stroke: #eee;
+            stroke-width: 0;
+        }
+
+        path.bg {
+            stroke: #eee;
+            stroke-width: 1;
+        }
+
+        path.in {
+            stroke: #99f;
+            stroke-width: 1;
+        }
+        
+        path.out {
+            stroke: #9d9; 
+            stroke-width: 1;
+        }
+
     </style>
 </head>
 
 <body>
-    <svg width="800" height="800" id="main">
+    <svg width="1830" height="800" id="main">
     </svg>
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="d3.js"></script>
