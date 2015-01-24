@@ -8,7 +8,72 @@ main = ->
     boxof = (name) -> "rect#" + esc(name)
     pathof = (from, to) -> "path#"+esc(from)+"-"+esc(to)
 
+    nodes = []
+    for node, dat of gostd
+        dat.name = node
+        nodes.push(dat)
     
+    cmpNode = (a, b) ->
+        return -1 if a.x < b.x
+        return 1 if a.x > b.x
+        return -1 if a.y < b.y
+        return 1 if a.y > b.y
+        return 0
+
+    nodes.sort(cmpNode)
+
+    xpush = ->
+        xmax = 0
+        for dat in nodes
+            if dat.x > xmax
+                xmax = dat.x
+
+        tryPush = (name) ->
+            node = gostd[name]
+            if node.x == xmax
+                return {able: false, worthy: false}
+            worthy = false
+            for out in node.outs
+                if gostd[out].x > node.x + 1
+                    worthy = true
+                    continue
+                sub = tryPush(out)
+                if not sub.able
+                    return {able: false, worthy: false}
+                if sub.worthy
+                    worthy = true
+            return {able: true, worthy: worthy}
+
+        pushWorthy = (name) ->
+            ret = tryPush(name)
+            return ret.worthy
+
+        push = (name) ->
+            
+            node = gostd[name]
+            for out in node.outs
+                if gostd[out].x > node.x + 1
+                    continue # no need to push this
+                push(out)
+
+            node.newx = node.x + 1
+
+            return
+
+        revNodes = nodes.slice().reverse()
+        for dat in revNodes
+            name = dat.name
+            while pushWorthy(name)
+                for n in nodes
+                    n.newx = n.x
+                push(name)
+                for n in nodes
+                    n.x = n.newx
+
+        return
+
+    xpush()
+
     layout = ->
         xmax = 0
         ymax = 0
@@ -25,13 +90,10 @@ main = ->
             cols.push([])
 
         for node, dat of gostd
-            dat.name = node
             cols[dat.x].push(dat)
     
-        console.log(cols)
         for x of cols
             col = cols[x]
-            console.log(col)
             for y of col
                 dat = col[y]
                 xthis = dat.x
@@ -58,6 +120,8 @@ main = ->
 
         for node, dat of gostd
             dat.y = dat.newy # reassign y
+
+        return
 
     layout()
 

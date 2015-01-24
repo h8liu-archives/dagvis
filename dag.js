@@ -3,7 +3,7 @@
   var main;
 
   main = function() {
-    var b, boxHeight, boxWidth, boxof, dat, esc, fromx, fromy, lab, layout, node, output, p, path, pathof, paths, svg, toNode, tox, toy, turnx, xgrid, ygrid, _i, _j, _k, _len, _len1, _len2, _ref;
+    var b, boxHeight, boxWidth, boxof, cmpNode, dat, esc, fromx, fromy, lab, layout, node, nodes, output, p, path, pathof, paths, svg, toNode, tox, toy, turnx, xgrid, xpush, ygrid, _i, _j, _k, _len, _len1, _len2, _ref;
     xgrid = 130;
     ygrid = 30;
     boxWidth = 120;
@@ -17,8 +17,108 @@
     pathof = function(from, to) {
       return "path#" + esc(from) + "-" + esc(to);
     };
+    nodes = [];
+    for (node in gostd) {
+      dat = gostd[node];
+      dat.name = node;
+      nodes.push(dat);
+    }
+    cmpNode = function(a, b) {
+      if (a.x < b.x) {
+        return -1;
+      }
+      if (a.x > b.x) {
+        return 1;
+      }
+      if (a.y < b.y) {
+        return -1;
+      }
+      if (a.y > b.y) {
+        return 1;
+      }
+      return 0;
+    };
+    nodes.sort(cmpNode);
+    xpush = function() {
+      var n, name, push, pushWorthy, revNodes, tryPush, xmax, _i, _j, _k, _l, _len, _len1, _len2, _len3;
+      xmax = 0;
+      for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+        dat = nodes[_i];
+        if (dat.x > xmax) {
+          xmax = dat.x;
+        }
+      }
+      tryPush = function(name) {
+        var out, sub, worthy, _j, _len1, _ref;
+        node = gostd[name];
+        if (node.x === xmax) {
+          return {
+            able: false,
+            worthy: false
+          };
+        }
+        worthy = false;
+        _ref = node.outs;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          out = _ref[_j];
+          if (gostd[out].x > node.x + 1) {
+            worthy = true;
+            continue;
+          }
+          sub = tryPush(out);
+          if (!sub.able) {
+            return {
+              able: false,
+              worthy: false
+            };
+          }
+          if (sub.worthy) {
+            worthy = true;
+          }
+        }
+        return {
+          able: true,
+          worthy: worthy
+        };
+      };
+      pushWorthy = function(name) {
+        var ret;
+        ret = tryPush(name);
+        return ret.worthy;
+      };
+      push = function(name) {
+        var out, _j, _len1, _ref;
+        node = gostd[name];
+        _ref = node.outs;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          out = _ref[_j];
+          if (gostd[out].x > node.x + 1) {
+            continue;
+          }
+          push(out);
+        }
+        node.newx = node.x + 1;
+      };
+      revNodes = nodes.slice().reverse();
+      for (_j = 0, _len1 = revNodes.length; _j < _len1; _j++) {
+        dat = revNodes[_j];
+        name = dat.name;
+        while (pushWorthy(name)) {
+          for (_k = 0, _len2 = nodes.length; _k < _len2; _k++) {
+            n = nodes[_k];
+            n.newx = n.x;
+          }
+          push(name);
+          for (_l = 0, _len3 = nodes.length; _l < _len3; _l++) {
+            n = nodes[_l];
+            n.x = n.newx;
+          }
+        }
+      }
+    };
+    xpush();
     layout = function() {
-      var col, cols, dat, i, n, node, out, tak, taken, x, xmax, xmin, xthis, y, ymax, _i, _j, _k, _len, _ref, _ref1, _ref2, _results;
+      var col, cols, i, n, out, tak, taken, x, xmax, xmin, xthis, y, ymax, _i, _j, _k, _len, _ref, _ref1, _ref2;
       xmax = 0;
       ymax = 0;
       for (node in gostd) {
@@ -38,13 +138,10 @@
       }
       for (node in gostd) {
         dat = gostd[node];
-        dat.name = node;
         cols[dat.x].push(dat);
       }
-      console.log(cols);
       for (x in cols) {
         col = cols[x];
-        console.log(col);
         for (y in col) {
           dat = col[y];
           xthis = dat.x;
@@ -75,12 +172,10 @@
           dat.newy = y;
         }
       }
-      _results = [];
       for (node in gostd) {
         dat = gostd[node];
-        _results.push(dat.y = dat.newy);
+        dat.y = dat.newy;
       }
-      return _results;
     };
     layout();
     svg = d3.select("svg#main");
