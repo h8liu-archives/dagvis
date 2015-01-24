@@ -3,7 +3,7 @@
   var main;
 
   main = function() {
-    var b, boxHeight, boxWidth, boxof, cmpNode, dat, esc, fromx, fromy, lab, layout, node, nodes, output, p, path, pathof, paths, svg, toNode, tox, toy, turnx, xgrid, xpush, ygrid, _i, _j, _k, _len, _len1, _len2, _ref;
+    var b, boxHeight, boxWidth, boxof, cmpNode, dat, esc, fromx, fromy, hoverFunc, lab, layout, lightIns, lightOuts, node, nodes, output, p, path, pathof, paths, svg, toNode, tox, toy, turnx, xgrid, xpush, ygrid, _i, _j, _k, _len, _len1, _len2, _ref;
     xgrid = 130;
     ygrid = 30;
     boxWidth = 120;
@@ -232,6 +232,49 @@
       p.attr("id", path.n);
       p.attr("class", "dep");
     }
+    lightIns = function(name, first) {
+      var boxin, depin, input, _l, _len3, _ref1;
+      if (first) {
+        boxin = "box in";
+        depin = "dep in";
+      } else {
+        boxin = "box in2";
+        depin = "dep in2";
+      }
+      _ref1 = gostd[name].ins;
+      for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+        input = _ref1[_l];
+        svg.select(boxof(input)).attr("class", boxin);
+        svg.select(pathof(input, name)).attr("class", depin);
+        lightIns(input, false);
+      }
+    };
+    lightOuts = function(name, first) {
+      var boxout, depout, _l, _len3, _ref1;
+      if (first) {
+        boxout = "box out";
+        depout = "dep out";
+      } else {
+        boxout = "box out2";
+        depout = "dep out2";
+      }
+      _ref1 = gostd[name].outs;
+      for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+        output = _ref1[_l];
+        svg.select(boxof(output)).attr("class", boxout);
+        svg.select(pathof(name, output)).attr("class", depout);
+        lightOuts(output, false);
+      }
+    };
+    hoverFunc = function(name) {
+      return function(d) {
+        svg.selectAll("rect").attr("class", "box");
+        svg.selectAll("path.dep").attr("class", "dep");
+        svg.select(boxof(name)).attr("class", "box focus");
+        lightIns(name, true);
+        lightOuts(name, true);
+      };
+    };
     for (node in gostd) {
       dat = gostd[node];
       b = svg.append("rect");
@@ -249,28 +292,7 @@
       lab.attr("class", "lab");
       lab.attr("id", "lab-" + name);
       lab.text(node);
-      b.on("mouseover", (function() {
-        var x;
-        x = dat;
-        return function(d) {
-          var input, _l, _len3, _len4, _m, _ref1, _ref2;
-          svg.selectAll("rect").attr("class", "box");
-          svg.selectAll("path.dep").attr("class", "dep");
-          svg.select(boxof(x.name)).attr("class", "box focus");
-          _ref1 = x.ins;
-          for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
-            input = _ref1[_l];
-            svg.select(boxof(input)).attr("class", "box in");
-            svg.select(pathof(input, x.name)).attr("class", "dep in");
-          }
-          _ref2 = x.outs;
-          for (_m = 0, _len4 = _ref2.length; _m < _len4; _m++) {
-            output = _ref2[_m];
-            svg.select(boxof(output)).attr("class", "box out");
-            svg.select(pathof(x.name, output)).attr("class", "dep out");
-          }
-        };
-      })());
+      b.on("mouseover", hoverFunc(dat.name));
     }
   };
 

@@ -164,6 +164,44 @@ main = ->
         p.attr("id", path.n)
         p.attr("class", "dep")
 
+    lightIns = (name, first) ->
+        if first
+            boxin = "box in"
+            depin = "dep in"
+        else
+            boxin = "box in2"
+            depin = "dep in2"
+
+        for input in gostd[name].ins
+            svg.select(boxof(input)).attr("class", boxin)
+            svg.select(pathof(input, name)).attr("class", depin)
+            lightIns(input, false)
+        return
+
+    lightOuts = (name, first) ->
+        if first
+            boxout = "box out"
+            depout = "dep out"
+        else
+            boxout = "box out2"
+            depout = "dep out2"
+
+        for output in gostd[name].outs
+            svg.select(boxof(output)).attr("class", boxout)
+            svg.select(pathof(name, output)).attr("class", depout)
+            lightOuts(output, false)
+        return
+
+    hoverFunc = (name) ->
+        return (d) ->
+            svg.selectAll("rect").attr("class", "box")
+            svg.selectAll("path.dep").attr("class", "dep")
+            svg.select(boxof(name)).attr("class", "box focus")
+            lightIns(name, true)
+            lightOuts(name, true)
+
+            return
+
     for node, dat of gostd
         b = svg.append("rect")
         b.attr("x", dat.x * xgrid)
@@ -182,27 +220,7 @@ main = ->
         lab.attr("id", "lab-"+name)
         lab.text(node)
 
-        b.on("mouseover", (->
-            x = dat
-            return (d) ->
-                svg.selectAll("rect").attr("class", "box")
-                svg.selectAll("path.dep").attr("class", "dep")
-                svg.select(boxof(x.name)).attr("class", "box focus")
-                for input in x.ins
-                    svg.select(boxof(input)).attr("class", "box in")
-                    svg.select(pathof(input, x.name)).attr(
-                        "class", "dep in"
-                    )
-
-                for output in x.outs
-                    svg.select(boxof(output)).attr("class", "box out")
-                    svg.select(pathof(x.name, output)).attr(
-                        "class", "dep out"
-                    )
-
-                return
-            )()
-        )
+        b.on("mouseover", hoverFunc(dat.name))
 
     return
 
