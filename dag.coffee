@@ -118,9 +118,10 @@ main = ->
                     y = y + 1
 
                 tak[y] = true
-                    
-                if xmax-1 > xthis
-                    for i in [xthis+1..xmax-1]
+                
+                xmax = xmax-1
+                if xmax > xthis
+                    for i in [xthis+1..xmax]
                         taken[i][y] = true
                 dat.newy = y
 
@@ -132,6 +133,30 @@ main = ->
         return
 
     layout()
+
+    if false
+        hy = (name, y) ->
+            gostd[name].y = y
+            return
+        hy("math", 18)
+        hy("math/cmplx", 17)
+        hy("runtime", 20)
+        hy("sync/atomic", 21)
+        hy("sync", 20)
+        hy("errors", 26)
+        hy("unicode/utf8", 21)
+        hy("strconv", 22)
+        hy("io", 25)
+        hy("syscall", 19)
+        hy("time", 26)
+        hy("os", 26)
+        hy("unicode", 23)
+        hy("bytes", 24)
+        hy("encoding/ascii85", 28)
+        hy("strings", 21)
+        hy("reflect", 17)
+        hy("bufio", 23)
+        hy("os/signal", 27)
 
     # we now start drawing
     svg = d3.select("svg#main")
