@@ -164,7 +164,6 @@
     $('path.link').removeAttr('data-show');
 
     nodes.style("stroke-opacity", function(o) {
-
       if (isConnected(d, o)) {
         thisOpacity = 1;
       } else {
@@ -184,8 +183,7 @@
     });
 
     links.style("stroke-opacity", function(o) {
-
-      if (o.source === d) {
+      if ((o.source === d) || (o.target === d)) {
 
         // Highlight target/sources of the link
         var elmNodes = graph.selectAll('.'+formatClassName('node', o.target));
@@ -195,26 +193,25 @@
         elmNodes.classed('dimmed', false);
 
         // Highlight arrows
-        var elmCurrentLink = $('path.link[data-source=' + o.source.index + ']');
+        var elmCurrentLink = $('path.link[data-'+(o.source === d ? 'source':'target')+'=' + d.index + ']');
         elmCurrentLink.attr('data-show', true);
         elmCurrentLink.attr('marker-end', 'url(#regular)');
 
         return 1;
 
       } else {
-
-        var elmAllLinks = $('path.link:not([data-show])');
-
-        if(opacity == 1) {
-          elmAllLinks.attr('marker-end', 'url(#regular)');
-        } else {
-          elmAllLinks.attr('marker-end', '');
-        }
+        return opacity;
 
         return opacity;
       }
-
     });
+
+    var elmAllLinks = $('path.link:not([data-show])');
+    if(opacity == 1) {
+      elmAllLinks.attr('marker-end', 'url(#regular)');
+    } else {
+      elmAllLinks.attr('marker-end', '');
+    }
   }
 
 
@@ -338,7 +335,7 @@
 
     // Build linked index
     data.links.forEach(function(d) {
-      linkedByIndex[d.source.index + "," + d.target.index] = 1;
+      linkedByIndex[d.source+ "," + d.target] = 1;
     });
 
     // Draw the
