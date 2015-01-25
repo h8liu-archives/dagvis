@@ -126,6 +126,8 @@ main = ->
 
         for node, dat of gostd
             dat.y = dat.newy # reassign y
+            # if dat.outs.length == 0
+            #     dat.y = dat.y + 1
 
         return
 
