@@ -135,7 +135,7 @@
     };
     xpush();
     layout = function() {
-      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1;
+      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref;
       xmax = 0;
       ymax = 0;
       for (node in gostd) {
@@ -200,11 +200,6 @@
           }
           tak[y] = true;
           xmax = xmax - 1;
-          if (xmax > xthis) {
-            for (i = _n = _ref1 = xthis + 1; _ref1 <= xmax ? _n <= xmax : _n >= xmax; i = _ref1 <= xmax ? ++_n : --_n) {
-              taken[i][y] = true;
-            }
-          }
           dat.newy = y;
           dat.xto = xmax;
         }
@@ -223,15 +218,12 @@
   buildGrids = function() {
     var i, j, lst, _i, _j, _k, _l, _len, _len1;
     xMax = 0;
-    yMax = 0;
+    yMax = 30;
     grids = [];
     for (_i = 0, _len = nodes.length; _i < _len; _i++) {
       node = nodes[_i];
       if (node.x > xMax) {
         xMax = node.x;
-      }
-      if (node.y > yMax) {
-        yMax = node.y;
       }
     }
     for (i = _j = 0; 0 <= xMax ? _j <= xMax : _j >= xMax; i = 0 <= xMax ? ++_j : --_j) {

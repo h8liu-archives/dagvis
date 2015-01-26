@@ -124,9 +124,9 @@ main = ->
                 tak[y] = true
                 
                 xmax = xmax-1
-                if xmax > xthis
-                    for i in [xthis+1..xmax]
-                        taken[i][y] = true
+                # if xmax > xthis
+                #     for i in [xthis+1..xmax]
+                #         taken[i][y] = true
                 dat.newy = y
                 dat.xto = xmax
 
@@ -144,13 +144,11 @@ main = ->
 
 buildGrids = ->
     xMax = 0
-    yMax = 0
+    yMax = 30
     grids = []
     for node in nodes
         if node.x > xMax
             xMax = node.x
-        if node.y > yMax
-            yMax = node.y
 
     for i in [0..xMax]
         lst = []
