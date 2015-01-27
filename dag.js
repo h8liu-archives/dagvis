@@ -135,7 +135,7 @@
     };
     xpush();
     layout = function() {
-      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref;
+      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1;
       xmax = 0;
       ymax = 0;
       for (node in gostd) {
@@ -200,6 +200,13 @@
           }
           tak[y] = true;
           xmax = xmax - 1;
+          if (true) {
+            if (xmax > xthis) {
+              for (i = _n = _ref1 = xthis + 1; _ref1 <= xmax ? _n <= xmax : _n >= xmax; i = _ref1 <= xmax ? ++_n : --_n) {
+                taken[i][y] = true;
+              }
+            }
+          }
           dat.newy = y;
           dat.xto = xmax;
         }

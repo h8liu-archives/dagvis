@@ -67,6 +67,8 @@ main = ->
         revNodes = nodes.slice().reverse()
         for dat in revNodes
             name = dat.name
+            # if dat.ins.length > 0
+            #     continue
             while pushWorthy(name)
                 for n in nodes
                     n.newx = n.x
@@ -124,9 +126,10 @@ main = ->
                 tak[y] = true
                 
                 xmax = xmax-1
-                # if xmax > xthis
-                #     for i in [xthis+1..xmax]
-                #         taken[i][y] = true
+                if true
+                    if xmax > xthis
+                        for i in [xthis+1..xmax]
+                            taken[i][y] = true
                 dat.newy = y
                 dat.xto = xmax
 
