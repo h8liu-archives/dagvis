@@ -39,7 +39,7 @@
   yMax = 0;
 
   main = function() {
-    var cmpNode, layout, lineup, pullclose, xpush;
+    var cmpNode, layout, lineup, xpush;
     cmpNode = function(a, b) {
       if (a.x < b.x) {
         return -1;
@@ -215,69 +215,8 @@
         dat.y = dat.newy;
       }
     };
-    pullclose = function() {
-      var cnt, col, colId, cols, i, indat, xmax, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _n, _o, _ref, _ref1;
-      xmax = 0;
-      ymax = 0;
-      for (_i = 0, _len = nodes.length; _i < _len; _i++) {
-        dat = nodes[_i];
-        if (dat.x > xmax) {
-          xmax = dat.x;
-        }
-        if (dat.y > ymax) {
-          ymax = dat.y;
-        }
-      }
-      cols = [];
-      for (i = _j = 0; 0 <= xmax ? _j <= xmax : _j >= xmax; i = 0 <= xmax ? ++_j : --_j) {
-        cols.push([]);
-      }
-      for (node in gostd) {
-        dat = gostd[node];
-        cols[dat.x].push(dat);
-      }
-      for (colId = _k = 0, _len1 = cols.length; _k < _len1; colId = ++_k) {
-        col = cols[colId];
-        if (colId === 0) {
-          for (_l = 0, _len2 = col.length; _l < _len2; _l++) {
-            dat = col[_l];
-            dat.newy = dat.y;
-          }
-          continue;
-        }
-        for (_m = 0, _len3 = col.length; _m < _len3; _m++) {
-          dat = col[_m];
-          cnt = 0;
-          _ref = dat.ins;
-          for (_n = 0, _len4 = _ref.length; _n < _len4; _n++) {
-            indat = _ref[_n];
-            dat.mean += indat.y;
-            cnt += 1;
-          }
-          if (cnt === !0) {
-            dat.mean = float(dat.mean) / cnt;
-          }
-        }
-        col.sort(function(a, b) {
-          if (a.mean < b.mean) {
-            return -1;
-          }
-          if (a.mean > b.mean) {
-            return 1;
-          }
-          return 0;
-        });
-        for (i = _o = 0, _ref1 = col.length - 1; 0 <= _ref1 ? _o <= _ref1 : _o >= _ref1; i = 0 <= _ref1 ? ++_o : --_o) {
-          col[i].newy = i;
-        }
-      }
-      for (node in gostd) {
-        dat = gostd[node];
-        dat.y = dat.newy;
-      }
-    };
     lineup = function() {
-      var col, colId, cols, i, id, inLeafNums, outLeafNums, trunkCols, xmax, ymax, ystart, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _n, _o;
+      var col, colId, cols, i, id, inLeafNums, lineAdjust, outLeafNums, trunkCols, xmax, ymax, ystart, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _n, _o;
       xmax = 0;
       ymax = 0;
       for (_i = 0, _len = nodes.length; _i < _len; _i++) {
@@ -333,102 +272,145 @@
         for (id = _o = 0, _len4 = col.length; _o < _len4; id = ++_o) {
           dat = col[id];
           dat.newy = ystart + id;
-
-          /*
-                   *would also change in gostd
-                  for node, dat of gostd
-                      dat.y = dat.newy
-          
-          
-                   *adjustment, place node close to "in" node
-                  for col, colId in trunkCols
-                      if colId == 0
-          continue
-                      ystart = inLeafNums[colId]
-                      yend = ymax - outLeafNums[colId]
-                       *score is the node's preference for a position in range [ystart, yend)
-                      scoreMatrix = []
-          
-                      for dat in col
-          scoreMatrix.push([])
-                      for dat, datId in col
-           *get in y axis
-          yvalues = []
-          for indat in dat.ins
-              indatX = gostd[indat].x
-              indatY = gostd[indat].y
-              if indatY < inLeafNums[indatX] || indatY >= ymax - outLeafNums[indatX]# not in trunkCols[indat.x]
-                  continue
-              yvalues.push(indatY)
-          
-           *calculate score
-          for j in [0..ymax]
-              if j < ystart || j >= yend
-                  scoreMatrix[datId].push(9999)
-                  continue
-          
-              score = 0
-              for y in yvalues
-                  score += Math.abs(j-y)
-              if yvalues.length != 0
-                  score = score / yvalues.length
-              scoreMatrix[datId].push(score)
-          
-                       *begin the matching algorithm
-                      for dat, datId in col
-          dat.newy = -1
-          dat.priorityList = []
-          for i in [0..ymax]
-              dat.priorityList.push(i)
-          dat.priorityList.sort((a, b)->
-              return -1 if scoreMatrix[datId][a] < scoreMatrix[datId][b]
-              return 1  if scoreMatrix[datId][a] > scoreMatrix[datId][b]
-              return 0
-          )
-          console.log(scoreMatrix[datId])
-          console.log(dat.priorityList)
-                      records = []
-                      for _ in [0..ymax]
-          records.push(-1)
-                      console.log(records)
-          
-                      colFinished = (col)->
-          if col.length == 0
-              return true
-          b = true
-          for dat in col
-              if dat.newy == -1
-                  b = false
-                  break
-          return b
-          
-                      getOne = (col)->
-          for dat, datId in col
-              if dat.newy == -1
-                  return datId
-          return -1
-          
-                      canPut = (datId, tarId)->
-          curId = records[tarId]
-          return true if curId == -1
-          return true if scoreMatrix[datId][tarId] < scoreMatrix[curId][tarId]
-          return false
-          
-                      while not colFinished(col)
-          datId = getOne(col)
-          while true
-              tarId = col[datId].priorityList.shift()
-              if canPut(datId, tarId)
-                  curId = records[tarId]
-                  console.log("canput", datId, tarId, curId)
-                  col[curId].newy = -1 if curId != -1
-                   *new val
-                  records[tarId] = datId
-                  col[datId].newy = tarId
-                  break
-           */
         }
       }
+      for (node in gostd) {
+        dat = gostd[node];
+        dat.y = dat.newy;
+      }
+      lineAdjust = function() {
+        var canPut, colFinished, curId, datId, getOne, indat, indatX, indatY, j, records, score, scoreMatrix, tarId, y, yend, yvalues, _, _len10, _len5, _len6, _len7, _len8, _len9, _p, _q, _r, _ref, _results, _s, _t, _u, _v, _w, _x;
+        _results = [];
+        for (colId = _p = 0, _len5 = trunkCols.length; _p < _len5; colId = ++_p) {
+          col = trunkCols[colId];
+          if (colId === 0) {
+            continue;
+          }
+          ystart = inLeafNums[colId];
+          yend = ymax - outLeafNums[colId];
+          scoreMatrix = [];
+          for (_q = 0, _len6 = col.length; _q < _len6; _q++) {
+            dat = col[_q];
+            scoreMatrix.push([]);
+          }
+          for (datId = _r = 0, _len7 = col.length; _r < _len7; datId = ++_r) {
+            dat = col[datId];
+            yvalues = [];
+            _ref = dat.ins;
+            for (_s = 0, _len8 = _ref.length; _s < _len8; _s++) {
+              indat = _ref[_s];
+              indatX = gostd[indat].x;
+              indatY = gostd[indat].newy;
+              if (indatY < inLeafNums[indatX] || indatY >= ymax - outLeafNums[indatX]) {
+                continue;
+              }
+              yvalues.push(indatY);
+            }
+            for (j = _t = 0; 0 <= ymax ? _t <= ymax : _t >= ymax; j = 0 <= ymax ? ++_t : --_t) {
+              if (j < ystart || j >= yend) {
+                scoreMatrix[datId].push(9999);
+                continue;
+              }
+              score = 0;
+              for (id = _u = 0, _len9 = yvalues.length; _u < _len9; id = ++_u) {
+                y = yvalues[id];
+                score += Math.abs(j - y);
+              }
+              if (yvalues.length !== 0) {
+                score = score / yvalues.length;
+              }
+              scoreMatrix[datId].push(score);
+            }
+          }
+          for (datId = _v = 0, _len10 = col.length; _v < _len10; datId = ++_v) {
+            dat = col[datId];
+            dat.newy = -1;
+            dat.priorityList = [];
+            for (i = _w = 0; 0 <= ymax ? _w <= ymax : _w >= ymax; i = 0 <= ymax ? ++_w : --_w) {
+              dat.priorityList.push(i);
+            }
+            dat.priorityList.sort(function(a, b) {
+              if (scoreMatrix[datId][a] < scoreMatrix[datId][b]) {
+                return -1;
+              }
+              if (scoreMatrix[datId][a] > scoreMatrix[datId][b]) {
+                return 1;
+              }
+              return 0;
+            });
+          }
+          records = [];
+          for (_ = _x = 0; 0 <= ymax ? _x <= ymax : _x >= ymax; _ = 0 <= ymax ? ++_x : --_x) {
+            records.push(-1);
+          }
+          colFinished = function(col) {
+            var b, _len11, _y;
+            if (col.length === 0) {
+              return true;
+            }
+            b = true;
+            for (_y = 0, _len11 = col.length; _y < _len11; _y++) {
+              dat = col[_y];
+              if (dat.newy === -1) {
+                b = false;
+                break;
+              }
+            }
+            return b;
+          };
+          getOne = function(col) {
+            var _len11, _y;
+            for (datId = _y = 0, _len11 = col.length; _y < _len11; datId = ++_y) {
+              dat = col[datId];
+              if (dat.newy === -1) {
+                return datId;
+              }
+            }
+            return -1;
+          };
+          canPut = function(datId, tarId) {
+            var curId;
+            curId = records[tarId];
+            if (curId === -1) {
+              return true;
+            }
+            if (scoreMatrix[datId][tarId] < scoreMatrix[curId][tarId]) {
+              return true;
+            }
+            return false;
+          };
+          _results.push((function() {
+            var _results1;
+            _results1 = [];
+            while (!colFinished(col)) {
+              datId = getOne(col);
+              _results1.push((function() {
+                var _results2;
+                _results2 = [];
+                while (true) {
+                  tarId = col[datId].priorityList.shift();
+                  if (canPut(datId, tarId)) {
+                    curId = records[tarId];
+                    console.log("canput", datId, tarId, curId);
+                    if (curId !== -1) {
+                      col[curId].newy = -1;
+                    }
+                    records[tarId] = datId;
+                    col[datId].newy = tarId;
+                    break;
+                  } else {
+                    _results2.push(void 0);
+                  }
+                }
+                return _results2;
+              })());
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      };
+      lineAdjust();
       for (node in gostd) {
         dat = gostd[node];
         dat.y = dat.newy;
