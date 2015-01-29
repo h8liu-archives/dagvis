@@ -154,7 +154,7 @@ main = ->
         cols = []
         for i in [0..xmax]
             cols.push([])
-        for node, dat of gostd    #may need to use nodes
+        for node, dat of gostd
             cols[dat.x].push(dat)
 
         trunkCols = []
@@ -182,7 +182,7 @@ main = ->
             ystart = Math.floor((ymax+inLeafNums[colId]-outLeafNums[colId])/2 - (col.length/2))
             for dat,id in col
                 dat.newy = ystart + id
-        #would also change in gostd
+        # update this part
         for node, dat of gostd
             dat.y = dat.newy
 
@@ -193,22 +193,22 @@ main = ->
                     continue
                 ystart = inLeafNums[colId]
                 yend = ymax - outLeafNums[colId]
-                #score is the node's preference for a position in range [ystart, yend)
-                scoreMatrix = []
 
+                # in a column, scoreMatrix[i][j] is the average Y distance to input dependencies
+                # for node i, if we put it in Y position j
+                scoreMatrix = []
                 for dat in col
                     scoreMatrix.push([])
                 for dat, datId in col
-                    #get in x,y axis
-                    yvalues = []
+                    yvalues = []      #store the y-axis of valid input dep
                     for indat in dat.ins
                         indatX = gostd[indat].x
                         indatY = gostd[indat].newy  #use the updated y value
-                        if indatY < inLeafNums[indatX] || indatY >= ymax - outLeafNums[indatX]# not in trunkCols[indat.x]
+                        if indatY < inLeafNums[indatX] || indatY >= ymax - outLeafNums[indatX]# not in trunk
                             continue
                         yvalues.push(indatY)
 
-                    #calculate score
+                    #calculate score matrix
                     for j in [0..ymax]
                         if j < ystart || j >= yend
                             scoreMatrix[datId].push(9999)
@@ -221,7 +221,10 @@ main = ->
                             score = score / yvalues.length
                         scoreMatrix[datId].push(score)
 
-                #begin the matching algorithm
+                # begin the matching algorithm, it's the "stable matching algorithm"
+                # every man has a preference to woman, and man would propose to woman
+                # woman would make decision based on her preference. In this case, the woman's preference
+                # is the same with man's preference....
                 for dat, datId in col
                     dat.newy = -1
                     dat.priorityList = []
@@ -234,21 +237,12 @@ main = ->
                     )
                     #console.log(scoreMatrix[datId])
                     #console.log(dat.priorityList)
-                records = []
+                records = []      # record the decision of each line.
                 for _ in [0..ymax]
                     records.push(-1)
                 #console.log(records)
 
-                colFinished = (col)->
-                    if col.length == 0
-                        return true
-                    b = true
-                    for dat in col
-                        if dat.newy == -1
-                            b = false
-                            break
-                    return b
-
+                # helpler function for the "stable matching algo"
                 getOne = (col)->
                     for dat, datId in col
                         if dat.newy == -1
@@ -261,13 +255,12 @@ main = ->
                     return true if scoreMatrix[datId][tarId] < scoreMatrix[curId][tarId]
                     return false
 
-                while not colFinished(col)
-                    datId = getOne(col)
+                while -1 != (datId = getOne(col))
                     while true
                         tarId = col[datId].priorityList.shift()
                         if canPut(datId, tarId)
                             curId = records[tarId]
-                            console.log("canput", datId, tarId, curId)
+                            #console.log("canput", datId, tarId, curId)
                             col[curId].newy = -1 if curId != -1
                             #new val
                             records[tarId] = datId
@@ -282,9 +275,7 @@ main = ->
 
     xpush()
     lineup()
-    #pullclose()
     #layout()
-
 
     createDAG()
     drawDAG()

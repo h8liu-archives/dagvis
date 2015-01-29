@@ -279,7 +279,7 @@
         dat.y = dat.newy;
       }
       lineAdjust = function() {
-        var canPut, colFinished, curId, datId, getOne, indat, indatX, indatY, j, records, score, scoreMatrix, tarId, y, yend, yvalues, _, _len10, _len5, _len6, _len7, _len8, _len9, _p, _q, _r, _ref, _results, _s, _t, _u, _v, _w, _x;
+        var canPut, curId, datId, getOne, indat, indatX, indatY, j, records, score, scoreMatrix, tarId, y, yend, yvalues, _, _len10, _len5, _len6, _len7, _len8, _len9, _p, _q, _r, _ref, _results, _s, _t, _u, _v, _w, _x;
         _results = [];
         for (colId = _p = 0, _len5 = trunkCols.length; _p < _len5; colId = ++_p) {
           col = trunkCols[colId];
@@ -343,21 +343,6 @@
           for (_ = _x = 0; 0 <= ymax ? _x <= ymax : _x >= ymax; _ = 0 <= ymax ? ++_x : --_x) {
             records.push(-1);
           }
-          colFinished = function(col) {
-            var b, _len11, _y;
-            if (col.length === 0) {
-              return true;
-            }
-            b = true;
-            for (_y = 0, _len11 = col.length; _y < _len11; _y++) {
-              dat = col[_y];
-              if (dat.newy === -1) {
-                b = false;
-                break;
-              }
-            }
-            return b;
-          };
           getOne = function(col) {
             var _len11, _y;
             for (datId = _y = 0, _len11 = col.length; _y < _len11; datId = ++_y) {
@@ -382,8 +367,7 @@
           _results.push((function() {
             var _results1;
             _results1 = [];
-            while (!colFinished(col)) {
-              datId = getOne(col);
+            while (-1 !== (datId = getOne(col))) {
               _results1.push((function() {
                 var _results2;
                 _results2 = [];
@@ -391,7 +375,6 @@
                   tarId = col[datId].priorityList.shift();
                   if (canPut(datId, tarId)) {
                     curId = records[tarId];
-                    console.log("canput", datId, tarId, curId);
                     if (curId !== -1) {
                       col[curId].newy = -1;
                     }
