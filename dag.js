@@ -398,14 +398,27 @@
   };
 
   drawDAG = function() {
-    var b, fromx, fromy, lab, output, p, path, paths, points, svg, toNode, tox, toy, turnx, xleft, xright, ybottom, ymid, ytop, _i, _j, _k, _len, _len1, _len2, _ref;
+    var b, fromx, fromy, lab, output, p, path, paths, points, svg, toNode, tox, toy, turnx, xleft, xmax, xright, ybottom, ymax, ymid, ytop, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref;
     svg = d3.select("svg#main");
+    xmax = 0;
+    ymax = 0;
+    for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+      dat = nodes[_i];
+      if (dat.x > xmax) {
+        xmax = dat.x;
+      }
+      if (dat.y > ymax) {
+        ymax = dat.y;
+      }
+    }
+    svg.attr("width", (xmax + 1) * xgrid);
+    svg.attr("height", (ymax + 1) * ygrid);
     paths = [];
     for (node in gostd) {
       dat = gostd[node];
       _ref = dat.outs;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        output = _ref[_i];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        output = _ref[_j];
         toNode = gostd[output];
         fromx = dat.x * xgrid + boxWidth;
         fromy = dat.y * ygrid + boxHeight / 2;
@@ -422,13 +435,13 @@
         });
       }
     }
-    for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
-      path = paths[_j];
+    for (_k = 0, _len2 = paths.length; _k < _len2; _k++) {
+      path = paths[_k];
       p = svg.select("path#BG-" + path.n);
       p.attr("d", path.p);
     }
-    for (_k = 0, _len2 = paths.length; _k < _len2; _k++) {
-      path = paths[_k];
+    for (_l = 0, _len3 = paths.length; _l < _len3; _l++) {
+      path = paths[_l];
       p = svg.select("path#" + path.n);
       p.attr("d", path.p);
     }

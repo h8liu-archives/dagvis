@@ -308,6 +308,15 @@ createDAG = ->
 drawDAG = ->
     # we now start drawing
     svg = d3.select("svg#main")
+    xmax = 0
+    ymax = 0
+    for dat in nodes
+        if dat.x > xmax
+            xmax = dat.x
+        if dat.y > ymax
+            ymax = dat.y
+    svg.attr("width", (xmax + 1) * xgrid)
+    svg.attr("height", (ymax + 1) * ygrid)
 
     paths = []
     for node, dat of gostd
