@@ -13,12 +13,12 @@
             font-size: 11px;
         }
 
-        rect.box { fill: #eee; }
-        rect.in { fill: #aaf; }
-        rect.out { fill: #9c9; }
-        rect.in2 { fill: #ddf; }
-        rect.out2 { fill: #ded; }
-        rect.focus { fill: #fcc; }
+        polygon.box { fill: #ddd; }
+        polygon.in { fill: #aaf; }
+        polygon.out { fill: #9c9; }
+        polygon.in2 { fill: #ddf; }
+        polygon.out2 { fill: #ded; }
+        polygon.focus { fill: #fcc; }
 
         path { fill: none; stroke-width: 0; stroke-linejoin: round; }
         path.bg, path.in, path.out, path.out2, path.in2 { 
@@ -43,9 +43,18 @@
 </head>
 
 <body>
-    <svg width="1830" height="2000" id="main"></svg>
+    <svg width="2000" height="2000" id="main"></svg>
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="d3.js"></script>
     <script type="text/javascript" src="gostd.js"></script>
     <script type="text/javascript" src="dag.js"></script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-19116218-3', 'auto');
+  ga('send', 'pageview');
+</script>
 </body>
