@@ -78,7 +78,6 @@ main = ->
 
         return
 
-    xpush()
 
     layout = ->
         xmax = 0
@@ -172,7 +171,145 @@ main = ->
             #     dat.y = dat.y + 1
         return
 
-    layout()
+
+    lineup = ->
+        xmax = 0
+        ymax = 0
+        for dat in nodes
+            if dat.x > xmax
+                xmax = dat.x
+            if dat.y > ymax
+                ymax = dat.y
+        ymax += 0   #leave some space
+
+        for node, dat of gostd
+            dat.newy = dat.y
+        cols = []
+        for i in [0..xmax]
+            cols.push([])
+        for node, dat of gostd
+            cols[dat.x].push(dat)
+
+        trunkCols = []
+        inLeafNums = []
+        outLeafNums = []
+        for i in [0..xmax]
+            trunkCols.push([])
+            inLeafNums.push(0)
+            outLeafNums.push(0)
+        # handle node with no in(top), and no out(to bottom)
+        # get truckCols
+        for col, colId in cols
+            for dat in col
+                if dat.outs.length is 0
+                    dat.newy = ymax - outLeafNums[colId]
+                    outLeafNums[colId] += 1
+                    continue
+                if (colId != 0) and (dat.ins.length is 0)
+                    dat.newy = inLeafNums[colId]
+                    inLeafNums[colId] += 1
+                    continue
+                trunkCols[colId].push(dat)
+        # raw placement, place truck node in middle
+        for col, colId in trunkCols
+            ystart = Math.floor((ymax+inLeafNums[colId]-outLeafNums[colId])/2 - (col.length/2))
+            for dat,id in col
+                dat.newy = ystart + id
+        # update this part
+        for node, dat of gostd
+            dat.y = dat.newy
+
+        #adjustment, place node close to "in" node
+        lineAdjust=->
+            for col, colId in trunkCols
+                if colId == 0
+                    continue
+                ystart = inLeafNums[colId]
+                yend = ymax - outLeafNums[colId]
+
+                # in a column, scoreMatrix[i][j] is the average Y distance to input dependencies
+                # for node i, if we put it in Y position j
+                scoreMatrix = []
+                for dat in col
+                    scoreMatrix.push([])
+                for dat, datId in col
+                    yvalues = []      #store the y-axis of valid input dep
+                    for indat in dat.ins
+                        indatX = gostd[indat].x
+                        indatY = gostd[indat].newy  #use the updated y value
+                        if indatY < inLeafNums[indatX] || indatY >= ymax - outLeafNums[indatX]# not in trunk
+                            continue
+                        yvalues.push(indatY)
+
+                    #calculate score matrix
+                    for j in [0..ymax]
+                        if j < ystart || j >= yend
+                            scoreMatrix[datId].push(9999)
+                            continue
+
+                        score = 0
+                        for y,id in yvalues
+                            score += Math.abs(j-y)
+                        if yvalues.length != 0
+                            score = score / yvalues.length
+                        scoreMatrix[datId].push(score)
+
+                # begin the matching algorithm, it's the "stable matching algorithm"
+                # every man has a preference to woman, and man would propose to woman
+                # woman would make decision based on her preference. In this case, the woman's preference
+                # is the same with man's preference....
+                for dat, datId in col
+                    dat.newy = -1
+                    dat.priorityList = []
+                    for i in [0..ymax]
+                        dat.priorityList.push(i)
+                    dat.priorityList.sort((a, b)->
+                        return -1 if scoreMatrix[datId][a] < scoreMatrix[datId][b]
+                        return 1  if scoreMatrix[datId][a] > scoreMatrix[datId][b]
+                        return 0
+                    )
+                    #console.log(scoreMatrix[datId])
+                    #console.log(dat.priorityList)
+                records = []      # record the decision of each line.
+                for _ in [0..ymax]
+                    records.push(-1)
+                #console.log(records)
+
+                # helpler function for the "stable matching algo"
+                getOne = (col)->
+                    for dat, datId in col
+                        if dat.newy == -1
+                            return datId
+                    return -1
+
+                canPut = (datId, tarId)->
+                    curId = records[tarId]
+                    return true if curId == -1
+                    return true if scoreMatrix[datId][tarId] < scoreMatrix[curId][tarId]
+                    return false
+
+                while -1 != (datId = getOne(col))
+                    while true
+                        tarId = col[datId].priorityList.shift()
+                        if canPut(datId, tarId)
+                            curId = records[tarId]
+                            #console.log("canput", datId, tarId, curId)
+                            col[curId].newy = -1 if curId != -1
+                            #new val
+                            records[tarId] = datId
+                            col[datId].newy = tarId
+                            break
+
+        lineAdjust()
+
+        for node, dat of gostd
+            dat.y = dat.newy
+        return
+
+    xpush()
+    lineup()
+    #layout()
+
     createDAG()
     drawDAG()
     # buildGrids()
