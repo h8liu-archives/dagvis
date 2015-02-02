@@ -1,5 +1,5 @@
 esc = (name) -> name.replace(/\//g, '_')
-boxof = (name) -> "rect#" + esc(name)
+boxof = (name) -> "polygon#" + esc(name)
 pathof = (from, to) -> "path#"+esc(from)+"-"+esc(to)
 boxFocus = ""
 nodes = []
@@ -7,7 +7,7 @@ for node, dat of gostd
     dat.name = node
     nodes.push(dat)
 
-xgrid = 130
+xgrid = 140
 ygrid = 30
 boxWidth = 120
 boxHeight = 20
@@ -83,6 +83,7 @@ main = ->
     layout = ->
         xmax = 0
         ymax = 0
+        ymin = 0
         for node, dat of gostd
             if dat.x > xmax
                 xmax = dat.x
@@ -119,22 +120,54 @@ main = ->
                         xmin = n.x
 
                 tak = taken[xthis]
-                y = 0
-                while y of tak
+                nin = 0
+                sin = 0
+                for input in dat.ins
+                    sin = sin + gostd[input].newy
+                    nin = nin + 1
+                mid = 0
+                if nin > 0
+                    mid = Math.round(sin / nin)
+                offset = 0
+                if isNaN(mid)
+                    throw new Error("mid is not a number")
+
+                while true
+                    if mid + offset not of tak
+                        y = mid + offset
+                        break
+                    if mid - offset not of tak
+                        y = mid - offset
+                        break
+                    offset = offset + 1
+                
+                if (y-2) of tak and (y-1) not of tak
+                    y = y - 1
+                else if (y+2) of tak and (y+1) not of tak
                     y = y + 1
 
+                if y < ymin
+                    ymin = y
+
+                tak[y-1] = true
                 tak[y] = true
+                tak[y+1] = true
                 
                 xmax = xmax-1
-                if true
-                    if xmax > xthis
-                        for i in [xthis+1..xmax]
-                            taken[i][y] = true
+                if xmax >= xthis+1
+                    i = xthis+1
+                    while i <= xmax
+                        taken[i][y] = true
+                        i = i + 1
                 dat.newy = y
                 dat.xto = xmax
 
         for node, dat of gostd
-            dat.y = dat.newy # reassign y
+            dat.y = dat.newy - ymin # reassign y
+            # if dat.x % 2 == 1
+            #     dat.y = dat.y + 1
+            dat.y = dat.y / 2
+
             # if dat.outs.length == 0
             #     dat.y = dat.y + 1
         return
@@ -142,7 +175,7 @@ main = ->
     layout()
     createDAG()
     drawDAG()
-    buildGrids()
+    # buildGrids()
     return
 
 buildGrids = ->
@@ -154,13 +187,12 @@ buildGrids = ->
             xMax = node.x
 
     for i in [0..xMax]
-        lst = []
-        for j in [0..yMax]
-            lst.push(false)
-        grids.push(lst)
+        grids.push({})
 
     for node in nodes
-        grids[node.x][node.y] = true
+        grids[node.x][node.y * 2] = true
+        grids[node.x][node.y * 2 - 1] = true
+        grids[node.x][node.y * 2 + 1] = true
 
     return
 
@@ -214,7 +246,7 @@ createDAG = ->
 
     hoverFunc = (name) ->
         return (d) ->
-            svg.selectAll("rect").attr("class", "box")
+            svg.selectAll("polygon").attr("class", "box")
             svg.selectAll("path.dep").attr("class", "dep")
             svg.select(boxof(name)).attr("class", "box focus")
             lightIns(name, true)
@@ -254,11 +286,7 @@ createDAG = ->
             return
 
     for node, dat of gostd
-        b = svg.append("rect")
-        b.attr("ry", 5)
-        b.attr("ry", 5)
-        b.attr("width", boxWidth)
-        b.attr("height", boxHeight)
+        b = svg.append("polygon")
         b.attr("class", "box")
         b.attr("id", esc(node))
 
@@ -271,8 +299,8 @@ createDAG = ->
 
         # b.on("drag", dragFunc(dat.name))
         # lab.on("drag", dragFunc(dat.name))
-        b.on("click", clickFunc(dat.name))
-        lab.on("click", clickFunc(dat.name))
+        # b.on("click", clickFunc(dat.name))
+        # lab.on("click", clickFunc(dat.name))
 
     return
 
@@ -292,7 +320,7 @@ drawDAG = ->
             tox = toNode.x * xgrid
             toy = toNode.y * ygrid+boxHeight / 2
             
-            turnx = tox - 5
+            turnx = tox - 10
             
             path = "M" + fromx + " " + fromy
             path += " L" + turnx + " " + fromy
@@ -309,9 +337,40 @@ drawDAG = ->
         p.attr("d", path.p)
 
     for node, dat of gostd
-        b = svg.select("rect#"+esc(node))
-        b.attr("x", dat.x * xgrid)
-        b.attr("y", dat.y * ygrid)
+        b = svg.select("polygon#"+esc(node))
+        xleft = dat.x * xgrid
+        xright = xleft + boxWidth
+        ytop = dat.y * ygrid
+        ybottom = ytop + boxHeight
+        ymid = ytop + boxHeight / 2
+        points = ""
+
+        if dat.ins.length == 0 and dat.outs.length == 0
+            points = points + xleft + "," + ytop + " "
+            points = points + xleft + "," + ybottom + " "
+            points = points + xright + "," + ybottom + " "
+            points = points + xright + "," + ytop
+        else if dat.ins.length == 0
+            points = points + xleft + "," + ytop + " "
+            points = points + xleft + "," + ybottom + " "
+            points = points + xright + "," + ybottom + " "
+            points = points + (xright + 5) + "," + ymid + " "
+            points = points + xright + "," + ytop
+        else if dat.outs.length == 0
+            points = points + xleft + "," + ytop + " "
+            points = points + (xleft - 5) + "," + ymid + " "
+            points = points + xleft + "," + ybottom + " "
+            points = points + xright + "," + ybottom + " "
+            points = points + xright + "," + ytop
+        else
+            points = points + xleft + "," + ytop + " "
+            points = points + (xleft - 5) + "," + ymid + " "
+            points = points + xleft + "," + ybottom + " "
+            points = points + xright + "," + ybottom + " "
+            points = points + (xright + 5) + "," + ymid + " "
+            points = points + xright + "," + ytop
+
+        b.attr("points", points)
 
         lab = svg.select("text#lab-"+esc(node))
         lab.attr("x", dat.x * xgrid + boxWidth / 2)
@@ -326,29 +385,29 @@ keydown = (e) ->
     if e.which == 38
         # up
         node = gostd[boxFocus]
-        y = node.y - 1
-        while y > 0
-            if not grids[node.x][y]
-                node.y = y
+        y = node.y * 2 - 1
+        while true
+            if y not of grids[node.x]
+                node.y = y / 2
                 drawDAG()
                 buildGrids()
                 break
-            y = y - 1
+            y = y - .5
         e.preventDefault()
     else if e.which == 40
         # down
         node = gostd[boxFocus]
-        y = node.y + 1
-        while y <= yMax
-            if not grids[node.x][y]
-                node.y = y
+        y = node.y * 2 + 1
+        while true
+            if y not of grids[node.x]
+                node.y = y / 2
                 drawDAG()
                 buildGrids()
                 break
-            y = y + 1
+            y = y + .5
         e.preventDefault()
     
     return true
 
-$(document).keydown(keydown)
+# $(document).keydown(keydown)
 $(document).ready(main)

@@ -7,7 +7,7 @@
   };
 
   boxof = function(name) {
-    return "rect#" + esc(name);
+    return "polygon#" + esc(name);
   };
 
   pathof = function(from, to) {
@@ -24,7 +24,7 @@
     nodes.push(dat);
   }
 
-  xgrid = 130;
+  xgrid = 140;
 
   ygrid = 30;
 
@@ -135,9 +135,10 @@
     };
     xpush();
     layout = function() {
-      var col, cols, i, n, out, tak, taken, xmax, xmin, xthis, y, ymax, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1;
+      var col, cols, i, input, mid, n, nin, offset, out, sin, tak, taken, xmax, xmin, xthis, y, ymax, ymin, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _n, _ref, _ref1;
       xmax = 0;
       ymax = 0;
+      ymin = 0;
       for (node in gostd) {
         dat = gostd[node];
         if (dat.x > xmax) {
@@ -194,17 +195,50 @@
             }
           }
           tak = taken[xthis];
-          y = 0;
-          while (y in tak) {
+          nin = 0;
+          sin = 0;
+          _ref1 = dat.ins;
+          for (_n = 0, _len4 = _ref1.length; _n < _len4; _n++) {
+            input = _ref1[_n];
+            sin = sin + gostd[input].newy;
+            nin = nin + 1;
+          }
+          mid = 0;
+          if (nin > 0) {
+            mid = Math.round(sin / nin);
+          }
+          offset = 0;
+          if (isNaN(mid)) {
+            throw new Error("mid is not a number");
+          }
+          while (true) {
+            if (!(mid + offset in tak)) {
+              y = mid + offset;
+              break;
+            }
+            if (!(mid - offset in tak)) {
+              y = mid - offset;
+              break;
+            }
+            offset = offset + 1;
+          }
+          if ((y - 2) in tak && !((y - 1) in tak)) {
+            y = y - 1;
+          } else if ((y + 2) in tak && !((y + 1) in tak)) {
             y = y + 1;
           }
+          if (y < ymin) {
+            ymin = y;
+          }
+          tak[y - 1] = true;
           tak[y] = true;
+          tak[y + 1] = true;
           xmax = xmax - 1;
-          if (true) {
-            if (xmax > xthis) {
-              for (i = _n = _ref1 = xthis + 1; _ref1 <= xmax ? _n <= xmax : _n >= xmax; i = _ref1 <= xmax ? ++_n : --_n) {
-                taken[i][y] = true;
-              }
+          if (xmax >= xthis + 1) {
+            i = xthis + 1;
+            while (i <= xmax) {
+              taken[i][y] = true;
+              i = i + 1;
             }
           }
           dat.newy = y;
@@ -213,17 +247,17 @@
       }
       for (node in gostd) {
         dat = gostd[node];
-        dat.y = dat.newy;
+        dat.y = dat.newy - ymin;
+        dat.y = dat.y / 2;
       }
     };
     layout();
     createDAG();
     drawDAG();
-    buildGrids();
   };
 
   buildGrids = function() {
-    var i, j, lst, _i, _j, _k, _l, _len, _len1;
+    var i, _i, _j, _k, _len, _len1;
     xMax = 0;
     yMax = 30;
     grids = [];
@@ -234,15 +268,13 @@
       }
     }
     for (i = _j = 0; 0 <= xMax ? _j <= xMax : _j >= xMax; i = 0 <= xMax ? ++_j : --_j) {
-      lst = [];
-      for (j = _k = 0; 0 <= yMax ? _k <= yMax : _k >= yMax; j = 0 <= yMax ? ++_k : --_k) {
-        lst.push(false);
-      }
-      grids.push(lst);
+      grids.push({});
     }
-    for (_l = 0, _len1 = nodes.length; _l < _len1; _l++) {
-      node = nodes[_l];
-      grids[node.x][node.y] = true;
+    for (_k = 0, _len1 = nodes.length; _k < _len1; _k++) {
+      node = nodes[_k];
+      grids[node.x][node.y * 2] = true;
+      grids[node.x][node.y * 2 - 1] = true;
+      grids[node.x][node.y * 2 + 1] = true;
     }
   };
 
@@ -310,7 +342,7 @@
     };
     hoverFunc = function(name) {
       return function(d) {
-        svg.selectAll("rect").attr("class", "box");
+        svg.selectAll("polygon").attr("class", "box");
         svg.selectAll("path.dep").attr("class", "dep");
         svg.select(boxof(name)).attr("class", "box focus");
         lightIns(name, true);
@@ -354,11 +386,7 @@
     };
     for (node in gostd) {
       dat = gostd[node];
-      b = svg.append("rect");
-      b.attr("ry", 5);
-      b.attr("ry", 5);
-      b.attr("width", boxWidth);
-      b.attr("height", boxHeight);
+      b = svg.append("polygon");
       b.attr("class", "box");
       b.attr("id", esc(node));
       lab = svg.append("text");
@@ -366,13 +394,11 @@
       lab.attr("id", "lab-" + esc(node));
       lab.text(node);
       b.on("mouseover", hoverFunc(dat.name));
-      b.on("click", clickFunc(dat.name));
-      lab.on("click", clickFunc(dat.name));
     }
   };
 
   drawDAG = function() {
-    var b, fromx, fromy, lab, output, p, path, paths, svg, toNode, tox, toy, turnx, _i, _j, _k, _len, _len1, _len2, _ref;
+    var b, fromx, fromy, lab, output, p, path, paths, points, svg, toNode, tox, toy, turnx, xleft, xright, ybottom, ymid, ytop, _i, _j, _k, _len, _len1, _len2, _ref;
     svg = d3.select("svg#main");
     paths = [];
     for (node in gostd) {
@@ -385,7 +411,7 @@
         fromy = dat.y * ygrid + boxHeight / 2;
         tox = toNode.x * xgrid;
         toy = toNode.y * ygrid + boxHeight / 2;
-        turnx = tox - 5;
+        turnx = tox - 10;
         path = "M" + fromx + " " + fromy;
         path += " L" + turnx + " " + fromy;
         path += " L" + turnx + " " + toy;
@@ -408,9 +434,39 @@
     }
     for (node in gostd) {
       dat = gostd[node];
-      b = svg.select("rect#" + esc(node));
-      b.attr("x", dat.x * xgrid);
-      b.attr("y", dat.y * ygrid);
+      b = svg.select("polygon#" + esc(node));
+      xleft = dat.x * xgrid;
+      xright = xleft + boxWidth;
+      ytop = dat.y * ygrid;
+      ybottom = ytop + boxHeight;
+      ymid = ytop + boxHeight / 2;
+      points = "";
+      if (dat.ins.length === 0 && dat.outs.length === 0) {
+        points = points + xleft + "," + ytop + " ";
+        points = points + xleft + "," + ybottom + " ";
+        points = points + xright + "," + ybottom + " ";
+        points = points + xright + "," + ytop;
+      } else if (dat.ins.length === 0) {
+        points = points + xleft + "," + ytop + " ";
+        points = points + xleft + "," + ybottom + " ";
+        points = points + xright + "," + ybottom + " ";
+        points = points + (xright + 5) + "," + ymid + " ";
+        points = points + xright + "," + ytop;
+      } else if (dat.outs.length === 0) {
+        points = points + xleft + "," + ytop + " ";
+        points = points + (xleft - 5) + "," + ymid + " ";
+        points = points + xleft + "," + ybottom + " ";
+        points = points + xright + "," + ybottom + " ";
+        points = points + xright + "," + ytop;
+      } else {
+        points = points + xleft + "," + ytop + " ";
+        points = points + (xleft - 5) + "," + ymid + " ";
+        points = points + xleft + "," + ybottom + " ";
+        points = points + xright + "," + ybottom + " ";
+        points = points + (xright + 5) + "," + ymid + " ";
+        points = points + xright + "," + ytop;
+      }
+      b.attr("points", points);
       lab = svg.select("text#lab-" + esc(node));
       lab.attr("x", dat.x * xgrid + boxWidth / 2);
       lab.attr("y", dat.y * ygrid + boxHeight / 2 + 4);
@@ -424,35 +480,33 @@
     }
     if (e.which === 38) {
       node = gostd[boxFocus];
-      y = node.y - 1;
-      while (y > 0) {
-        if (!grids[node.x][y]) {
-          node.y = y;
+      y = node.y * 2 - 1;
+      while (true) {
+        if (!(y in grids[node.x])) {
+          node.y = y / 2;
           drawDAG();
           buildGrids();
           break;
         }
-        y = y - 1;
+        y = y - .5;
       }
       e.preventDefault();
     } else if (e.which === 40) {
       node = gostd[boxFocus];
-      y = node.y + 1;
-      while (y <= yMax) {
-        if (!grids[node.x][y]) {
-          node.y = y;
+      y = node.y * 2 + 1;
+      while (true) {
+        if (!(y in grids[node.x])) {
+          node.y = y / 2;
           drawDAG();
           buildGrids();
           break;
         }
-        y = y + 1;
+        y = y + .5;
       }
       e.preventDefault();
     }
     return true;
   };
-
-  $(document).keydown(keydown);
 
   $(document).ready(main);
 
