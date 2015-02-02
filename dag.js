@@ -224,7 +224,7 @@
           }
           if ((y - 2) in tak && !((y - 1) in tak)) {
             y = y - 1;
-          } else if ((y + 2) in tak && !((y + 1) in tak)) {
+          } else if (!((y - 1) in tak) && (y + 2) in tak && !((y + 1) in tak)) {
             y = y + 1;
           }
           if (y < ymin) {

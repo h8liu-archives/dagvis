@@ -143,7 +143,7 @@ main = ->
                 
                 if (y-2) of tak and (y-1) not of tak
                     y = y - 1
-                else if (y+2) of tak and (y+1) not of tak
+                else if (y-1) not of tak and (y+2) of tak and (y+1) not of tak
                     y = y + 1
 
                 if y < ymin
