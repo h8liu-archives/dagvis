@@ -398,7 +398,7 @@
   };
 
   drawDAG = function() {
-    var b, fromx, fromy, lab, output, p, path, paths, points, svg, toNode, tox, toy, turnx, xleft, xmax, xright, ybottom, ymax, ymid, ytop, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref;
+    var b, fromx, fromy, lab, output, p, path, paths, points, svg, t, toNode, tox, toy, turnx, xleft, xmax, xright, ybottom, ymax, ymid, ytop, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref;
     svg = d3.select("svg#main");
     xmax = 0;
     ymax = 0;
@@ -445,6 +445,7 @@
       p = svg.select("path#" + path.n);
       p.attr("d", path.p);
     }
+    t = 6;
     for (node in gostd) {
       dat = gostd[node];
       b = svg.select("polygon#" + esc(node));
@@ -463,20 +464,20 @@
         points = points + xleft + "," + ytop + " ";
         points = points + xleft + "," + ybottom + " ";
         points = points + xright + "," + ybottom + " ";
-        points = points + (xright + 5) + "," + ymid + " ";
+        points = points + (xright + t) + "," + ymid + " ";
         points = points + xright + "," + ytop;
       } else if (dat.outs.length === 0) {
         points = points + xleft + "," + ytop + " ";
-        points = points + (xleft - 5) + "," + ymid + " ";
+        points = points + (xleft - t) + "," + ymid + " ";
         points = points + xleft + "," + ybottom + " ";
         points = points + xright + "," + ybottom + " ";
         points = points + xright + "," + ytop;
       } else {
         points = points + xleft + "," + ytop + " ";
-        points = points + (xleft - 5) + "," + ymid + " ";
+        points = points + (xleft - t) + "," + ymid + " ";
         points = points + xleft + "," + ybottom + " ";
         points = points + xright + "," + ybottom + " ";
-        points = points + (xright + 5) + "," + ymid + " ";
+        points = points + (xright + t) + "," + ymid + " ";
         points = points + xright + "," + ytop;
       }
       b.attr("points", points);

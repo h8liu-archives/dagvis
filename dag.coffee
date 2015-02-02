@@ -345,6 +345,7 @@ drawDAG = ->
         p = svg.select("path#"+path.n)
         p.attr("d", path.p)
 
+    t = 6
     for node, dat of gostd
         b = svg.select("polygon#"+esc(node))
         xleft = dat.x * xgrid
@@ -363,20 +364,20 @@ drawDAG = ->
             points = points + xleft + "," + ytop + " "
             points = points + xleft + "," + ybottom + " "
             points = points + xright + "," + ybottom + " "
-            points = points + (xright + 5) + "," + ymid + " "
+            points = points + (xright + t) + "," + ymid + " "
             points = points + xright + "," + ytop
         else if dat.outs.length == 0
             points = points + xleft + "," + ytop + " "
-            points = points + (xleft - 5) + "," + ymid + " "
+            points = points + (xleft - t) + "," + ymid + " "
             points = points + xleft + "," + ybottom + " "
             points = points + xright + "," + ybottom + " "
             points = points + xright + "," + ytop
         else
             points = points + xleft + "," + ytop + " "
-            points = points + (xleft - 5) + "," + ymid + " "
+            points = points + (xleft - t) + "," + ymid + " "
             points = points + xleft + "," + ybottom + " "
             points = points + xright + "," + ybottom + " "
-            points = points + (xright + 5) + "," + ymid + " "
+            points = points + (xright + t) + "," + ymid + " "
             points = points + xright + "," + ytop
 
         b.attr("points", points)
